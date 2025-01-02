@@ -6,6 +6,7 @@ from sprites import Player, Laser, Meteor, ExplosionAnimation
 class Game:
     def __init__(self):
         init_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Space Shooter")
+        init_audio_device()
         self.load_assets()
 
         self.group_laser = []
@@ -18,6 +19,8 @@ class Game:
         self.timer_meteor = Timer(METEOR_TIMER_DURATION, True, True, self.create_meteor)
         self.group_explosion = []
 
+        play_music_stream(self.audios["music"])
+
     def load_assets(self):
         self.assets = {
             "font": load_font_ex(join("font", "Stormfaze.otf"), FONT_SIZE, ffi.NULL, 0),
@@ -29,6 +32,12 @@ class Game:
                 load_texture(join("images", "explosion", f"{i}.png"))
                 for i in range(1, 29)
             ],
+        }
+
+        self.audios = {
+            "laser": load_sound(join("audio", "laser.wav")),
+            "explosion": load_sound(join("audio", "explosion.wav")),
+            "music": load_music_stream(join("audio", "music.wav")),
         }
 
         self.star_data = [
@@ -47,6 +56,7 @@ class Game:
 
     def shoot_laser(self, pos):
         self.group_laser.append(Laser(self.assets["laser"], pos))
+        play_sound(self.audios["laser"])
 
     def create_meteor(self):
         self.group_meteor.append(Meteor(self.assets["meteor"]))
@@ -69,6 +79,7 @@ class Game:
                     self.group_explosion.append(
                         ExplosionAnimation(self.assets["explosion"], laser.pos)
                     )
+                    play_sound(self.audios["explosion"])
                     break
         # PLAYER & METEOR.
         for meteor in self.group_meteor:
@@ -87,6 +98,7 @@ class Game:
         draw_text_ex(self.assets["font"], score_text, score_pos, FONT_SIZE, 0, WHITE)
 
     def update(self):
+        update_music_stream(self.audios["music"])
         dt = get_frame_time()
         self.timer_meteor.update()
         self.player.update(dt)
@@ -109,6 +121,8 @@ class Game:
         while not window_should_close():
             self.update()
             self.draw()
+        unload_music_stream(self.audios["music"])
+        close_audio_device()
         close_window()
 
 
