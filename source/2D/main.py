@@ -20,6 +20,7 @@ class Game:
 
     def load_assets(self):
         self.assets = {
+            "font": load_font_ex(join("font", "Stormfaze.otf"), FONT_SIZE, ffi.NULL, 0),
             "player": load_texture(join("images", "spaceship.png")),
             "star": load_texture(join("images", "star.png")),
             "laser": load_texture(join("images", "laser.png")),
@@ -79,6 +80,12 @@ class Game:
             ):
                 close_window()
 
+    def draw_score(self):
+        score_text = str(int(get_time()))
+        text_size = measure_text_ex(self.assets["font"], score_text, FONT_SIZE, 0)
+        score_pos = WINDOW_WIDTH / 2 - text_size.x, 100
+        draw_text_ex(self.assets["font"], score_text, score_pos, FONT_SIZE, 0, WHITE)
+
     def update(self):
         dt = get_frame_time()
         self.timer_meteor.update()
@@ -92,6 +99,7 @@ class Game:
         begin_drawing()
         clear_background(BG_COLOR)
         self.draw_stars()
+        self.draw_score()
         self.player.draw()
         for sprite in self.group_laser + self.group_meteor + self.group_explosion:
             sprite.draw()
