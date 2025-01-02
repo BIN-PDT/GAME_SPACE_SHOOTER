@@ -49,13 +49,35 @@ class Game:
         self.group_laser = [s for s in self.group_laser if not s.discard]
         self.group_meteor = [s for s in self.group_meteor if not s.discard]
 
+    def check_collision(self):
+        # LASER & METEOR.
+        for laser in self.group_laser:
+            for meteor in self.group_meteor:
+                if check_collision_circle_rec(
+                    meteor.get_center_pos(),
+                    meteor.COLLISION_RADIUS,
+                    laser.get_rectangle(),
+                ):
+                    laser.discard = meteor.discard = True
+                    break
+        # PLAYER & METEOR.
+        for meteor in self.group_meteor:
+            if check_collision_circles(
+                self.player.get_center_pos(),
+                self.player.COLLISION_RADIUS,
+                meteor.get_center_pos(),
+                meteor.COLLISION_RADIUS,
+            ):
+                close_window()
+
     def update(self):
         dt = get_frame_time()
         self.timer_meteor.update()
         self.player.update(dt)
-        self.discard_sprites()
         for sprite in self.group_laser + self.group_meteor:
             sprite.update(dt)
+        self.check_collision()
+        self.discard_sprites()
 
     def draw(self):
         begin_drawing()
