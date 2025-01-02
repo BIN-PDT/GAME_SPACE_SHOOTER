@@ -1,6 +1,6 @@
 from settings import *
 from timers import Timer
-from sprites import Player, Laser, Meteor
+from sprites import Player, Laser, Meteor, ExplosionAnimation
 
 
 class Game:
@@ -16,6 +16,7 @@ class Game:
         )
         self.group_meteor = []
         self.timer_meteor = Timer(METEOR_TIMER_DURATION, True, True, self.create_meteor)
+        self.group_explosion = []
 
     def load_assets(self):
         self.assets = {
@@ -23,6 +24,10 @@ class Game:
             "star": load_texture(join("images", "star.png")),
             "laser": load_texture(join("images", "laser.png")),
             "meteor": load_texture(join("images", "meteor.png")),
+            "explosion": [
+                load_texture(join("images", "explosion", f"{i}.png"))
+                for i in range(1, 29)
+            ],
         }
 
         self.star_data = [
@@ -48,6 +53,7 @@ class Game:
     def discard_sprites(self):
         self.group_laser = [s for s in self.group_laser if not s.discard]
         self.group_meteor = [s for s in self.group_meteor if not s.discard]
+        self.group_explosion = [s for s in self.group_explosion if not s.discard]
 
     def check_collision(self):
         # LASER & METEOR.
@@ -59,6 +65,9 @@ class Game:
                     laser.get_rectangle(),
                 ):
                     laser.discard = meteor.discard = True
+                    self.group_explosion.append(
+                        ExplosionAnimation(self.assets["explosion"], laser.pos)
+                    )
                     break
         # PLAYER & METEOR.
         for meteor in self.group_meteor:
@@ -74,7 +83,7 @@ class Game:
         dt = get_frame_time()
         self.timer_meteor.update()
         self.player.update(dt)
-        for sprite in self.group_laser + self.group_meteor:
+        for sprite in self.group_laser + self.group_meteor + self.group_explosion:
             sprite.update(dt)
         self.check_collision()
         self.discard_sprites()
@@ -84,7 +93,7 @@ class Game:
         clear_background(BG_COLOR)
         self.draw_stars()
         self.player.draw()
-        for sprite in self.group_laser + self.group_meteor:
+        for sprite in self.group_laser + self.group_meteor + self.group_explosion:
             sprite.draw()
         end_drawing()
 

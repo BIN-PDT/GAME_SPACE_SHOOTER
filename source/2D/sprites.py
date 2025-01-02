@@ -21,7 +21,7 @@ class Sprite:
         self.discard = not -300 < self.pos.y < WINDOW_HEIGHT + 300
 
     def get_center_pos(self):
-        return Vector2(self.pos.x + self.pos.x / 2, self.pos.y + self.pos.y / 2)
+        return Vector2(self.pos.x + self.size.x / 2, self.pos.y + self.size.y / 2)
 
     def update(self, dt):
         pass
@@ -92,3 +92,21 @@ class Meteor(Sprite):
             self.rotation,
             WHITE,
         )
+
+
+class ExplosionAnimation:
+    def __init__(self, textures, pos):
+        self.textures = textures
+        self.size = Vector2(textures[0].width, textures[1].height)
+        self.pos = Vector2(pos.x - self.size.x / 2, pos.y - self.size.y / 2)
+        self.discard = False
+        self.index = 0
+
+    def update(self, dt):
+        if self.index < len(self.textures) - 1:
+            self.index += 20 * dt
+        else:
+            self.discard = True
+
+    def draw(self):
+        draw_texture_v(self.textures[int(self.index)], self.pos, WHITE)
