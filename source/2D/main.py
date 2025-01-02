@@ -7,21 +7,25 @@ class Game:
     def __init__(self):
         init_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Space Shooter")
         init_audio_device()
+        # ASSETS.
         self.load_assets()
-
+        # GROUP.
         self.group_laser = []
+        self.group_meteor = []
+        self.group_explosion = []
+        # TIMER.
+        self.timer_meteor = Timer(METEOR_TIMER_DURATION, True, True, self.create_meteor)
+        # PLAYER.
         self.player = Player(
             self.assets["player"],
             Vector2(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2),
             self.shoot_laser,
         )
-        self.group_meteor = []
-        self.timer_meteor = Timer(METEOR_TIMER_DURATION, True, True, self.create_meteor)
-        self.group_explosion = []
-
+        # MUSIC.
         play_music_stream(self.audios["music"])
 
     def load_assets(self):
+        # FONT & IMAGE.
         self.assets = {
             "font": load_font_ex(join("font", "Stormfaze.otf"), FONT_SIZE, ffi.NULL, 0),
             "player": load_texture(join("images", "spaceship.png")),
@@ -33,13 +37,13 @@ class Game:
                 for i in range(1, 29)
             ],
         }
-
+        # MUSIC & SOUND.
         self.audios = {
             "laser": load_sound(join("audio", "laser.wav")),
             "explosion": load_sound(join("audio", "explosion.wav")),
             "music": load_music_stream(join("audio", "music.wav")),
         }
-
+        # INITIAL DATA.
         self.star_data = [
             (
                 Vector2(
@@ -53,6 +57,12 @@ class Game:
     def draw_stars(self):
         for star in self.star_data:
             draw_texture_ex(self.assets["star"], star[0], 0, star[1], WHITE)
+
+    def draw_score(self):
+        score_text = str(int(get_time()))
+        text_size = measure_text_ex(self.assets["font"], score_text, FONT_SIZE, 0)
+        score_pos = WINDOW_WIDTH / 2 - text_size.x, 100
+        draw_text_ex(self.assets["font"], score_text, score_pos, FONT_SIZE, 0, WHITE)
 
     def shoot_laser(self, pos):
         self.group_laser.append(Laser(self.assets["laser"], pos))
@@ -90,12 +100,6 @@ class Game:
                 meteor.COLLISION_RADIUS,
             ):
                 close_window()
-
-    def draw_score(self):
-        score_text = str(int(get_time()))
-        text_size = measure_text_ex(self.assets["font"], score_text, FONT_SIZE, 0)
-        score_pos = WINDOW_WIDTH / 2 - text_size.x, 100
-        draw_text_ex(self.assets["font"], score_text, score_pos, FONT_SIZE, 0, WHITE)
 
     def update(self):
         update_music_stream(self.audios["music"])

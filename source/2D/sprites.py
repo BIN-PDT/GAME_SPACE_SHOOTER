@@ -13,15 +13,18 @@ class Sprite:
         # COLLISION.
         self.COLLISION_RADIUS = self.size.y / 2
 
+    def get_center_pos(self):
+        return Vector2(self.pos.x + self.size.x / 2, self.pos.y + self.size.y / 2)
+
+    def get_rectangle(self):
+        return Rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y)
+
     def move(self, dt):
         self.pos.x += self.direction.x * self.SPEED * dt
         self.pos.y += self.direction.y * self.SPEED * dt
 
     def check_discard(self):
         self.discard = not -300 < self.pos.y < WINDOW_HEIGHT + 300
-
-    def get_center_pos(self):
-        return Vector2(self.pos.x + self.size.x / 2, self.pos.y + self.size.y / 2)
 
     def update(self, dt):
         pass
@@ -57,9 +60,6 @@ class Laser(Sprite):
     def __init__(self, texture, pos):
         super().__init__(texture, pos, Vector2(0, -1), LASER_SPEED)
 
-    def get_rectangle(self):
-        return Rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y)
-
     def update(self, dt):
         self.move(dt)
         self.check_discard()
@@ -71,24 +71,31 @@ class Meteor(Sprite):
         direction = Vector2(uniform(-0.5, 0.5), 1)
         speed = randint(*METEOR_SPEED_RANGE)
         super().__init__(texture, pos, direction, speed)
+        # ROTATION.
         self.rotation = 0
-        self.rect = Rectangle(0, 0, self.size.x, self.size.y)
+        self.center_pos = Vector2(self.size.x / 2, self.size.y / 2)
+        self.source_rect = Rectangle(0, 0, self.size.x, self.size.y)
+        self.target_rect = Rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y)
 
-    def update(self, dt):
-        self.move(dt)
-        self.check_discard()
+    def rotate(self, dt):
         self.rotation += 60 * dt
+        self.target_rect.x = self.pos.x
+        self.target_rect.y = self.pos.y
 
     def get_center_pos(self):
         return self.pos
 
+    def update(self, dt):
+        self.move(dt)
+        self.rotate(dt)
+        self.check_discard()
+
     def draw(self):
-        target_rect = Rectangle(self.pos.x, self.pos.y, self.size.x, self.size.y)
         draw_texture_pro(
             self.texture,
-            self.rect,
-            target_rect,
-            Vector2(self.size.x / 2, self.size.y / 2),
+            self.source_rect,
+            self.target_rect,
+            self.center_pos,
             self.rotation,
             WHITE,
         )
