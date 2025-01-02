@@ -54,3 +54,20 @@ class Laser(Sprite):
     def update(self, dt):
         self.move(dt)
         self.check_discard()
+
+
+class Meteor(Sprite):
+    def __init__(self, texture):
+        pos = Vector2(randint(0, WINDOW_WIDTH), randint(-150, -50))
+        direction = Vector2(uniform(-0.5, 0.5), 1)
+        speed = randint(*METEOR_SPEED_RANGE)
+        super().__init__(texture, pos, direction, speed)
+        self.rotation = 0
+
+    def update(self, dt):
+        self.move(dt)
+        self.check_discard()
+        self.rotation += 60 * dt
+
+    def draw(self):
+        draw_texture_ex(self.texture, self.pos, self.rotation, 1, WHITE)

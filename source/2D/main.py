@@ -1,6 +1,6 @@
 from settings import *
 from timers import Timer
-from sprites import Player, Laser
+from sprites import Player, Laser, Meteor
 
 
 class Game:
@@ -14,12 +14,15 @@ class Game:
             Vector2(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2),
             self.shoot_laser,
         )
+        self.group_meteor = []
+        self.timer_meteor = Timer(METEOR_TIMER_DURATION, True, True, self.create_meteor)
 
     def load_assets(self):
         self.assets = {
             "player": load_texture(join("images", "spaceship.png")),
             "star": load_texture(join("images", "star.png")),
             "laser": load_texture(join("images", "laser.png")),
+            "meteor": load_texture(join("images", "meteor.png")),
         }
 
         self.star_data = [
@@ -39,23 +42,28 @@ class Game:
     def shoot_laser(self, pos):
         self.group_laser.append(Laser(self.assets["laser"], pos))
 
+    def create_meteor(self):
+        self.group_meteor.append(Meteor(self.assets["meteor"]))
+
     def discard_sprites(self):
-        self.group_laser = [laser for laser in self.group_laser if not laser.discard]
+        self.group_laser = [s for s in self.group_laser if not s.discard]
+        self.group_meteor = [s for s in self.group_meteor if not s.discard]
 
     def update(self):
         dt = get_frame_time()
+        self.timer_meteor.update()
         self.player.update(dt)
         self.discard_sprites()
-        for laser in self.group_laser:
-            laser.update(dt)
+        for sprite in self.group_laser + self.group_meteor:
+            sprite.update(dt)
 
     def draw(self):
         begin_drawing()
         clear_background(BG_COLOR)
         self.draw_stars()
         self.player.draw()
-        for laser in self.group_laser:
-            laser.draw()
+        for sprite in self.group_laser + self.group_meteor:
+            sprite.draw()
         end_drawing()
 
     def run(self):
