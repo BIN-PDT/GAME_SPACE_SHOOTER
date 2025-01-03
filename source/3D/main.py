@@ -1,4 +1,5 @@
 from settings import *
+from models import Floor
 
 
 class Game:
@@ -13,6 +14,8 @@ class Game:
         self.camera.target = Vector3(0.0, 0.0, -1.0)
         self.camera.position = Vector3(-4.0, 8.0, 6.0)
         self.camera.projection = CAMERA_PERSPECTIVE
+        # SETUP.
+        self.floor = Floor(self.dark_texture)
 
     def load_assets(self):
         self.models = {
@@ -42,6 +45,7 @@ class Game:
         clear_background(BG_COLOR)
         begin_drawing()
         begin_mode_3d(self.camera)
+        self.floor.draw()
         end_mode_3d()
         end_drawing()
 
