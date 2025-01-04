@@ -45,13 +45,6 @@ class Game:
 
         self.font = load_font_ex(join("font", "Stormfaze.otf"), FONT_SIZE, ffi.NULL, 0)
 
-    def shoot_laser(self, pos):
-        self.group_laser.append(Laser(self.models["laser"], pos, self.light_texture))
-        play_sound(self.audios["laser"])
-
-    def create_meteor(self):
-        self.group_meteor.append(Meteor(choice(self.textures)))
-
     def draw_shadows(self):
         # PLAYER.
         player_radius = 0.5 + self.player.pos.y
@@ -63,7 +56,20 @@ class Game:
             meteor_shadow_pos = Vector3(meteor.pos.x, -1.5, meteor.pos.z)
             draw_cylinder(meteor_shadow_pos, 0, meteor_radius, 0.1, 20, SHADOW_COLOR)
 
-    def check_discarded(self):
+    def draw_score(self):
+        score_text = str(int(get_time()))
+        text_size = measure_text_ex(self.font, score_text, FONT_SIZE, 0)
+        score_pos = WINDOW_WIDTH / 2 - text_size.x, 100
+        draw_text_ex(self.font, score_text, score_pos, FONT_SIZE, 0, WHITE)
+
+    def shoot_laser(self, pos):
+        self.group_laser.append(Laser(self.models["laser"], pos, self.light_texture))
+        play_sound(self.audios["laser"])
+
+    def create_meteor(self):
+        self.group_meteor.append(Meteor(choice(self.textures)))
+
+    def discard_models(self):
         self.group_laser = [m for m in self.group_laser if not m.discard]
         self.group_meteor = [m for m in self.group_meteor if not m.discard]
 
@@ -89,12 +95,6 @@ class Game:
                     play_sound(self.audios["explosion"])
                     break
 
-    def draw_score(self):
-        score_text = str(int(get_time()))
-        text_size = measure_text_ex(self.font, score_text, FONT_SIZE, 0)
-        score_pos = WINDOW_WIDTH / 2 - text_size.x, 100
-        draw_text_ex(self.font, score_text, score_pos, FONT_SIZE, 0, WHITE)
-
     def update(self):
         update_music_stream(self.audios["music"])
         dt = get_frame_time()
@@ -103,7 +103,7 @@ class Game:
         for model in self.group_laser + self.group_meteor:
             model.update(dt)
         self.check_collision()
-        self.check_discarded()
+        self.discard_models()
 
     def draw(self):
         clear_background(BG_COLOR)
