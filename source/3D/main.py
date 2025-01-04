@@ -1,5 +1,5 @@
 from settings import *
-from models import Floor, Player
+from models import Floor, Player, Laser, Meteor
 
 
 class Game:
@@ -14,6 +14,10 @@ class Game:
         self.camera.target = Vector3(0.0, 0.0, -1.0)
         self.camera.position = Vector3(-4.0, 8.0, 6.0)
         self.camera.projection = CAMERA_PERSPECTIVE
+        # GROUP.
+        self.group_laser, self.group_meteor = [], []
+        # TIMER.
+        self.timer_meteor = Timer(METEOR_TIMER_DURATION, True, True, self.create_meteor)
         # SETUP.
         self.floor = Floor(self.dark_texture)
         self.player = Player(self.models["player"], self.shoot_laser)
@@ -40,16 +44,28 @@ class Game:
         self.font = load_font_ex("Stormfaze.otf", FONT_SIZE, ffi.NULL, 0)
 
     def shoot_laser(self, pos):
-        pass
+        self.group_laser.append(Laser(self.models["laser"], pos, self.light_texture))
+
+    def create_meteor(self):
+        self.group_meteor.append(Meteor(choice(self.textures)))
 
     def draw_shadows(self):
+        # PLAYER.
         player_radius = 0.5 + self.player.pos.y
         player_shadow_pos = Vector3(self.player.pos.x, -1.5, self.player.pos.z)
-        draw_cylinder(player_shadow_pos, 0, player_radius, 0.1, 20, (0, 0, 0, 50))
+        draw_cylinder(player_shadow_pos, 0, player_radius, 0.1, 20, SHADOW_COLOR)
+        # METEOR.
+        for meteor in self.group_meteor:
+            meteor_radius = meteor.radius * 0.9
+            meteor_shadow_pos = Vector3(meteor.pos.x, -1.5, meteor.pos.z)
+            draw_cylinder(meteor_shadow_pos, 0, meteor_radius, 0.1, 20, SHADOW_COLOR)
 
     def update(self):
         dt = get_frame_time()
+        self.timer_meteor.update()
         self.player.update(dt)
+        for model in self.group_laser + self.group_meteor:
+            model.update(dt)
 
     def draw(self):
         clear_background(BG_COLOR)
@@ -58,6 +74,8 @@ class Game:
         self.floor.draw()
         self.draw_shadows()
         self.player.draw()
+        for model in self.group_laser + self.group_meteor:
+            model.draw()
         end_mode_3d()
         end_drawing()
 

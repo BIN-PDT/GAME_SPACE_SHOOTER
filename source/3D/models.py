@@ -38,7 +38,7 @@ class Player(Model):
     def input(self):
         self.direction.x = int(is_key_down(KEY_RIGHT)) - int(is_key_down(KEY_LEFT))
         if is_key_pressed(KEY_SPACE):
-            self.shoot_laser(self.pos)
+            self.shoot_laser(Vector3Add(self.pos, Vector3(0, 0, -1)))
 
     def constraint(self):
         self.pos.x = max(-6, min(7, self.pos.x))
@@ -55,3 +55,33 @@ class Player(Model):
         draw_model_ex(
             self.model, self.pos, Vector3(0, 0, 1), self.angle, Vector3(1, 1, 1), WHITE
         )
+
+
+class Laser(Model):
+    def __init__(self, model, pos, texture):
+        super().__init__(model, pos, LASER_SPEED, Vector3(0, 0, -1))
+        set_material_texture(self.model.materials[0], MATERIAL_MAP_ALBEDO, texture)
+
+
+class Meteor(Model):
+    def __init__(self, texture):
+        self.radius = uniform(0.6, 1.5)
+        self.rotation = Vector3(uniform(-5, 5), uniform(-5, 5), uniform(-5, 5))
+        self.ROTATION_SPEED = Vector3(uniform(-1, 1), uniform(-1, 1), uniform(-1, 1))
+        # SETUP.
+        model = load_model_from_mesh(gen_mesh_sphere(self.radius, 8, 8))
+        set_material_texture(model.materials[0], MATERIAL_MAP_ALBEDO, texture)
+        pos = Vector3(uniform(-6, 7), 0, -20)
+        speed = uniform(*METEOR_SPEED_RANGE)
+        direction = Vector3(0, 0, uniform(0.75, 1.25))
+        super().__init__(model, pos, speed, direction)
+
+    def rotate(self, dt):
+        self.rotation.x += self.ROTATION_SPEED.x * dt
+        self.rotation.y += self.ROTATION_SPEED.y * dt
+        self.rotation.z += self.ROTATION_SPEED.z * dt
+        self.model.transform = matrix_rotate_xyz(self.rotation)
+
+    def update(self, dt):
+        self.rotate(dt)
+        super().update(dt)
