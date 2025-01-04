@@ -1,5 +1,5 @@
 from settings import *
-from models import Floor
+from models import Floor, Player
 
 
 class Game:
@@ -16,6 +16,7 @@ class Game:
         self.camera.projection = CAMERA_PERSPECTIVE
         # SETUP.
         self.floor = Floor(self.dark_texture)
+        self.player = Player(self.models["player"], self.shoot_laser)
 
     def load_assets(self):
         self.models = {
@@ -38,14 +39,25 @@ class Game:
 
         self.font = load_font_ex("Stormfaze.otf", FONT_SIZE, ffi.NULL, 0)
 
+    def shoot_laser(self, pos):
+        pass
+
+    def draw_shadows(self):
+        player_radius = 0.5 + self.player.pos.y
+        player_shadow_pos = Vector3(self.player.pos.x, -1.5, self.player.pos.z)
+        draw_cylinder(player_shadow_pos, 0, player_radius, 0.1, 20, (0, 0, 0, 50))
+
     def update(self):
         dt = get_frame_time()
+        self.player.update(dt)
 
     def draw(self):
         clear_background(BG_COLOR)
         begin_drawing()
         begin_mode_3d(self.camera)
         self.floor.draw()
+        self.draw_shadows()
+        self.player.draw()
         end_mode_3d()
         end_drawing()
 
