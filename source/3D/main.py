@@ -41,7 +41,7 @@ class Game:
         self.dark_texture = load_texture(join("textures", "dark.png"))
         self.light_texture = load_texture(join("textures", "light.png"))
 
-        self.font = load_font_ex("Stormfaze.otf", FONT_SIZE, ffi.NULL, 0)
+        self.font = load_font_ex(join("font", "Stormfaze.otf"), FONT_SIZE, ffi.NULL, 0)
 
     def shoot_laser(self, pos):
         self.group_laser.append(Laser(self.models["laser"], pos, self.light_texture))
@@ -85,6 +85,12 @@ class Game:
                     meteor.activate_flash()
                     break
 
+    def draw_score(self):
+        score_text = str(int(get_time()))
+        text_size = measure_text_ex(self.font, score_text, FONT_SIZE, 0)
+        score_pos = WINDOW_WIDTH / 2 - text_size.x, 100
+        draw_text_ex(self.font, score_text, score_pos, FONT_SIZE, 0, WHITE)
+
     def update(self):
         dt = get_frame_time()
         self.timer_meteor.update()
@@ -104,6 +110,7 @@ class Game:
         for model in self.group_laser + self.group_meteor:
             model.draw()
         end_mode_3d()
+        self.draw_score()
         end_drawing()
 
     def run(self):
