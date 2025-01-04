@@ -21,6 +21,8 @@ class Game:
         # SETUP.
         self.floor = Floor(self.dark_texture)
         self.player = Player(self.models["player"], self.shoot_laser)
+        # MUSIC.
+        play_music_stream(self.audios["music"])
 
     def load_assets(self):
         self.models = {
@@ -28,7 +30,7 @@ class Game:
             "laser": load_model(join("models", "laser.glb")),
         }
 
-        self.audio = {
+        self.audios = {
             "laser": load_sound(join("audio", "laser.wav")),
             "explosion": load_sound(join("audio", "explosion.wav")),
             "music": load_music_stream(join("audio", "music.wav")),
@@ -45,6 +47,7 @@ class Game:
 
     def shoot_laser(self, pos):
         self.group_laser.append(Laser(self.models["laser"], pos, self.light_texture))
+        play_sound(self.audios["laser"])
 
     def create_meteor(self):
         self.group_meteor.append(Meteor(choice(self.textures)))
@@ -83,6 +86,7 @@ class Game:
                     laser.discard = True
                     meteor.timer_destroy.activate()
                     meteor.activate_flash()
+                    play_sound(self.audios["explosion"])
                     break
 
     def draw_score(self):
@@ -92,6 +96,7 @@ class Game:
         draw_text_ex(self.font, score_text, score_pos, FONT_SIZE, 0, WHITE)
 
     def update(self):
+        update_music_stream(self.audios["music"])
         dt = get_frame_time()
         self.timer_meteor.update()
         self.player.update(dt)
@@ -117,6 +122,7 @@ class Game:
         while not window_should_close():
             self.update()
             self.draw()
+        unload_music_stream(self.audios["music"])
         close_audio_device()
         close_window()
 
