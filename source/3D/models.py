@@ -15,8 +15,12 @@ class Model:
         self.pos.y += self.direction.y * self.SPEED * dt
         self.pos.z += self.direction.z * self.SPEED * dt
 
+    def check_discard(self):
+        self.discard = self.discard or not -20 < self.pos.z < 5
+
     def update(self, dt):
         self.move(dt)
+        self.check_discard()
 
     def draw(self):
         draw_model(self.model, self.pos, 1, WHITE)
