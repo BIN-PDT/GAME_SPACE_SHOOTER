@@ -8,6 +8,7 @@ class Model:
         self.pos = pos
         self.SPEED = speed
         self.direction = direction
+        self.discard = False
 
     def move(self, dt):
         self.pos.x += self.direction.x * self.SPEED * dt
@@ -75,6 +76,13 @@ class Meteor(Model):
         speed = uniform(*METEOR_SPEED_RANGE)
         direction = Vector3(0, 0, uniform(0.75, 1.25))
         super().__init__(model, pos, speed, direction)
+        # COLLISION.
+        self.timer_destroy = Timer(0.25, False, False, self.activate_discard)
+        # SHADER.
+        self.shader = load_shader(ffi.NULL, join("shaders", "flash.fs"))
+        model.materials[0].shader = self.shader
+        self.flash_loc = get_shader_location(self.shader, "flash")
+        self.flash_amount = ffi.new("struct Vector2 *", [1, 0])
 
     def rotate(self, dt):
         self.rotation.x += self.ROTATION_SPEED.x * dt
@@ -82,6 +90,16 @@ class Meteor(Model):
         self.rotation.z += self.ROTATION_SPEED.z * dt
         self.model.transform = matrix_rotate_xyz(self.rotation)
 
+    def activate_discard(self):
+        self.discard = True
+
+    def activate_flash(self):
+        set_shader_value(
+            self.shader, self.flash_loc, self.flash_amount, SHADER_UNIFORM_VEC2
+        )
+
     def update(self, dt):
-        self.rotate(dt)
-        super().update(dt)
+        self.timer_destroy.update()
+        if not self.timer_destroy.active:
+            self.rotate(dt)
+            super().update(dt)
